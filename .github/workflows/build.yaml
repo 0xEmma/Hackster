@@ -31,8 +31,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}
-          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}
           context: .
           tags: ${{ env.DOCKER_IMAGE }}
           file: Dockerfile.base
