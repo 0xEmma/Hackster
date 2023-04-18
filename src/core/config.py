@@ -270,4 +270,5 @@ def load_settings(env_file: str = ".env"):
     return global_settings
 
 
-settings = load_settings(os.environ["ENV_PATH"])
+print(os.environ.get("ENV_PATH", '.env'))
+settings = load_settings(os.environ.get("ENV_PATH", '.env'))
