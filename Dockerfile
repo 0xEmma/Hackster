@@ -8,13 +8,13 @@ RUN apt-get update && \
 
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
-COPY ./alembic /hackster/alembic
-COPY ./alembic.ini /hackster/alembic.ini
-COPY ./config /hackster/config
+COPY alembic /hackster/alembic
+COPY alembic.ini /hackster/alembic.ini
+COPY config /hackster/config
 COPY src /hackster/src
-COPY ./resources /hackster/resources
-COPY ./main.py /hackster/main.py
-COPY ./startup.sh /hackster/startup.sh
+COPY resources /hackster/resources
+COPY main.py /hackster/main.py
+COPY startup.sh /hackster/startup.sh
 RUN chmod +x /hackster/startup.sh
 
 WORKDIR /hackster
