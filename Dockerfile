@@ -21,7 +21,7 @@ WORKDIR /hackster
 ENV PYTHONPATH=/hackster
 ENV HACKSTER_ENV=prod
 
-EXPOSE 8080
+EXPOSE 1337
 # Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
 # And then will start Uvicorn
 ENTRYPOINT ["/hackster/startup.sh"]
