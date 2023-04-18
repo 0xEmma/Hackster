@@ -1,0 +1,55 @@
+name: Test
+
+on: [ push, workflow_dispatch ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    env:
+      # Specify explicit paths for python dependencies and the pre-commit
+      # environment so we know which directories to cache
+      ENV_PATH: ".test.env"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.5.0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.4.2
+          virtualenvs-create: true
+          virtualenvs-in-project: false
+          installer-parallel: true
+
+      # Only when the context is exactly the same, we will restore the cache.
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3.0.4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Create venv and install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --with dev
+
+      - name: Run tests with pytest and generate coverage report
+        run: |
+          ENV_PATH=".test.env" poetry run task test
+          poetry run task coverage xml
+
+      - name: Upload coverage reports to CodeCov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # Only needed for private repositories.
