@@ -14,12 +14,10 @@ COPY src /hackster/src
 COPY resources /hackster/resources
 COPY startup.sh /hackster/startup.sh
 COPY pyproject.toml /hackster/pyproject.toml
-COPY .env /hackster/.env
 RUN chmod +x /hackster/startup.sh
 
 WORKDIR /hackster
 ENV PYTHONPATH=/hackster
-ENV BOT_ENVIRONMENT=production
 
 EXPOSE 1337
 # Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
