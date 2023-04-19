@@ -52,6 +52,7 @@ class MuteCog(commands.Cog):
         )
         async with AsyncSessionLocal() as session:
             session.add(mute_)
+            await session.commit()
 
         role = ctx.guild.get_role(settings.roles.MUTED)
         await member.add_roles(role)

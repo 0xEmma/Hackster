@@ -49,14 +49,14 @@ async def ban_member(
         user_id=member.id, reason=reason, moderator_id=author.id, unban_time=dur,
         approved=False if needs_approval else True
     )
+    infraction = Infraction(
+        user_id=member.id, reason=f"Previously banned for: {reason}", weight=0, moderator_id=author.id,
+        date=datetime.now().date()
+    )
     async with AsyncSessionLocal() as session:
         session.add(ban)
-
-        infraction = Infraction(
-            user_id=member.id, reason=f"Previously banned for: {reason}", weight=0, moderator_id=author.id,
-            date=datetime.now().date()
-        )
         session.add(infraction)
+        await session.commit()
     ban_id = ban.id
     assert ban_id is None
 
@@ -195,6 +195,7 @@ async def mute_member(
         )
         async with AsyncSessionLocal() as session:
             session.add(mute)
+            await session.commit()
 
 
 async def unmute_member(guild: Guild, member: Member) -> None:
@@ -212,6 +213,7 @@ async def unmute_member(guild: Guild, member: Member) -> None:
         mute: Mute = result.first()
         if mute:
             await session.delete(mute)
+            await session.commit()
         else:
             raise NoResultFound(f"Mute not found for user ID {member.id}")
 
@@ -225,6 +227,7 @@ async def add_infraction(guild: Guild, member: Member, weight: int, reason: str,
     infraction = Infraction(user_id=member.id, reason=reason, weight=weight, moderator_id=author.id)
     async with AsyncSessionLocal() as session:
         session.add(infraction)
+        await session.commit()
 
     await author.send(f"{member.mention} ({member.id}) has been warned with a strike weight of {weight}.")
 

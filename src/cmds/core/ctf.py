@@ -122,6 +122,7 @@ class CtfCog(commands.Cog):
             )
             async with AsyncSessionLocal() as session:
                 session.add(ctf)
+                await session.commit()
             await ctx.respond(f"CTF {ctf_name} has been created.")
 
     @ctf.command(description="Delete CTF channels")
@@ -136,6 +137,7 @@ class CtfCog(commands.Cog):
                 result = await session.scalars(stmt)
                 ctf: Ctf = result.first()
                 await session.delete(ctf)
+                await session.commit()
         except Exception as exc:
             logger.error(f"Something bad happened when trying to delete '{ctf_name}'!", exc_info=exc)
 

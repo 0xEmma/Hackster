@@ -38,6 +38,7 @@ class NoteCog(commands.Cog):
         user_note = UserNote(user_id=member.id, note=note, date=today, moderator_id=moderator_id)
         async with AsyncSessionLocal() as session:
             session.add(user_note)
+            await session.commit()
 
         await ctx.respond("Note added.")
 
@@ -49,6 +50,7 @@ class NoteCog(commands.Cog):
             user_note = await session.get(UserNote, note_id)
             if user_note:
                 await session.delete(user_note)
+                await session.commit()
                 await ctx.respond(f"Note #{note_id} has been deleted.")
             else:
                 await ctx.respond(f"Note #{note_id} has not been found.")

@@ -139,6 +139,7 @@ class IdentifyCog(commands.Cog):
         )
         async with AsyncSessionLocal() as session:
             session.add(htb_discord_link)
+            await session.commit()
 
         await process_identification(htb_user_details, user=member, bot=self.bot)
 

@@ -167,6 +167,7 @@ class UserCog(commands.Cog):
 
             for link in htb_discord_links:
                 await session.delete(link)
+            await session.commit()
 
         await ctx.respond(f"All tokens related to Discord or HTB ID '{member.id}' have been deleted.")
 

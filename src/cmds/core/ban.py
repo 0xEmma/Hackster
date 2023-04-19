@@ -130,6 +130,7 @@ class BanCog(commands.Cog):
             ban.unban_time = dur
             ban.approved = True
             session.add(ban)
+            await session.commit()
 
         new_unban_at = datetime.fromtimestamp(dur)
         member = await get_member_safe(ban.user_id, ctx.guild)
