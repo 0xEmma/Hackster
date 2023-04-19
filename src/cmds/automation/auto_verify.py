@@ -54,9 +54,9 @@ class MessageHandler(commands.Cog):
             return
 
         try:
-            await self.process_reverification(ctx.user)
+            await self.process_reverification(ctx.author)
         except VerificationError as exc:
-            logger.debug(f"HTB Discord link for user {ctx.user.name} with ID {ctx.user.id} not found", exc_info=exc)
+            logger.debug(f"HTB Discord link for user {ctx.user.name} with ID {ctx.author.id} not found", exc_info=exc)
             await ctx.reply("Automatic verification failed. Please contact support.")
 
     @commands.Cog.listener()
