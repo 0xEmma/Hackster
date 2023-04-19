@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 import pytest
 
-from src.cmds.core import channel_manage
 from tests.helpers import MockTextChannel
 
 
@@ -12,7 +11,7 @@ class TestChannelManage:
     @pytest.mark.asyncio
     async def test_no_hints(self, bot, ctx):
         """Test the response of the `no_hints` command."""
-        cog = channel_manage.ChannelManageCog(bot)
+        cog = channel_manage.ChannelCog(bot)
 
         # Invoke the command.
         await cog.no_hints.callback(cog, ctx)
@@ -28,7 +27,7 @@ class TestChannelManage:
     @pytest.mark.asyncio
     async def test_spoiler_without_url(self, bot, ctx):
         """Test the response of the `spoiler` command without url."""
-        cog = channel_manage.ChannelManageCog(bot)
+        cog = channel_manage.ChannelCog(bot)
 
         # Invoke the command.
         await cog.spoiler.callback(cog, ctx, url="")
@@ -44,7 +43,7 @@ class TestChannelManage:
     @pytest.mark.asyncio
     async def test_spoiler(self, bot, ctx):
         """Test the response of the `spoiler` command."""
-        cog = channel_manage.ChannelManageCog(bot)
+        cog = channel_manage.ChannelCog(bot)
         mock_channel = MockTextChannel()
 
         with patch.object(bot, "get_channel", return_value=mock_channel):
@@ -69,7 +68,7 @@ class TestChannelManage:
     @pytest.mark.parametrize("seconds", [10, str(10)])
     async def test_slowmode_success(self, bot, ctx, seconds):
         """Test `slowmode` command with valid seconds."""
-        cog = channel_manage.ChannelManageCog(bot)
+        cog = channel_manage.ChannelCog(bot)
 
         channel = MockTextChannel(name="slow-mode")
         # Invoke the command.
@@ -91,7 +90,7 @@ class TestChannelManage:
     )
     async def test_slowmode_with_seconds_out_of_bounds(self, bot, ctx, seconds, expected_seconds):
         """Test `slowmode` command with out of bounds seconds."""
-        cog = channel_manage.ChannelManageCog(bot)
+        cog = channel_manage.ChannelCog(bot)
 
         channel = MockTextChannel(name="slow-mode")
         # Invoke the command.
@@ -110,7 +109,7 @@ class TestChannelManage:
     @pytest.mark.asyncio
     async def test_slowmode_seconds_as_invalid_string(self, bot, ctx):
         """Test the response of the `slowmode` command with invalid seconds string."""
-        cog = channel_manage.ChannelManageCog(bot)
+        cog = channel_manage.ChannelCog(bot)
 
         seconds = "not seconds"
         # Invoke the command.
