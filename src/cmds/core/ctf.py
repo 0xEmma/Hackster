@@ -47,7 +47,7 @@ class CtfCog(commands.Cog):
         """Create CTF channels."""
         if len(ctf_pass) < 5:
             logger.info(f"Whoops, the password was too short! Password was only {len(ctf_pass)} characters...")
-            await ctx.respond("The password must be longer than 4 char's")
+            await ctx.respond("The password must be longer than 4 characters")
             return
 
         async def create_channel(
@@ -151,17 +151,19 @@ class CtfCog(commands.Cog):
             channel_cat = discord.utils.get(ctx.guild.categories, name=f"{ctf_name}")
             admin_role = discord.utils.get(ctx.guild.roles, name=f"{ctf_name}-Admin")
             par_role = discord.utils.get(ctx.guild.roles, name=f"{ctf_name}-Participant")
-            await channel_announcements.delete()
-            await channel_rules.delete()
-            await channel_support.delete()
-            await channel_general.delete()
-            await channel_cat.delete()
-            await admin_role.delete()
-            await par_role.delete()
-            await ctx.respond(f"CTF {ctf_name} has been deleted.")
+            await asyncio.gather(
+                channel_announcements.delete(),
+                channel_rules.delete(),
+                channel_support.delete(),
+                channel_general.delete(),
+                channel_cat.delete(),
+                admin_role.delete(),
+                par_role.delete(),
+            )
             logger.debug(f"Done deleting channels and roles for '{ctf_name}'")
         except Exception as exc:
             logger.error("Failed to delete a channel or role.", exc_info=exc)
+        await ctx.respond(f"CTF {ctf_name} has been deleted.")
 
     @ctf.command(description="Join CTF channels")
     async def join(

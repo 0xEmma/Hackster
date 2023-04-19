@@ -218,6 +218,39 @@ class UserCog(commands.Cog):
         embed.set_footer(text=f"More info: /history {fetched_user.id}")
         await ctx.respond(embed=embed)
 
+    @slash_command(guild_ids=settings.guild_ids, name="user-stats")
+    @has_any_role(
+        *settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"),
+        *settings.role_groups.get("ALL_HTB_STAFF")
+    )
+    async def user_stats(self, ctx: ApplicationContext) -> None:
+        """See total user count!"""
+        logger.debug(f"{ctx.author.display_name} requested user stats, sending to {ctx.channel.name}")
+        # Get stats
+        members = 0
+        bots_count = 0
+        verified_members = 0
+
+        for m in ctx.guild.members:
+            if not m.bot:
+                members += 1
+                if len(m.roles) > 1:
+                    verified_members += 1
+            else:
+                bots_count += 1
+
+        percent_verified = round(verified_members / members * 100)
+
+        # Create embed
+        embed = discord.Embed(title="HackTheBox Discord User Stats")
+        embed.set_thumbnail(url=ctx.guild.icon)
+        embed.add_field(name="Members", value=f"{members}", inline=False)
+        embed.add_field(
+            name="Verified Members", value=f"{verified_members} - {percent_verified}% verified", inline=False
+        )
+        embed.add_field(name="Bots", value=f"{bots_count}", inline=False)
+        await ctx.respond(embed=embed)
+
 
 def setup(bot: Bot) -> None:
     """Load the `UserCog` cog."""

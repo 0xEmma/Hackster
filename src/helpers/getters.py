@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 @singledispatch
-async def get_member_safe(member: Member | User | int | str, guild: Guild):
+async def get_member_safe(member: Member | User | int | str, guild: Guild) -> Member:
     """Get a member from a user or member ID or mention."""
     logger.error("Inside signgledispatch of get_member_safe")
     raise NotImplementedError("Implement process for get_user_safe")
@@ -61,13 +61,13 @@ async def get_user_safe(user: User | Member | int | str, bot: Bot):
 
 @get_user_safe.register
 async def _(user: User | Member, bot: Bot = None) -> User:
-    logger.debug(f"Attempting to get user by id type {type(user)}")
+    logger.debug(f"Attempting to get user by type {type(user)}")
     return user
 
 
 @get_user_safe.register
 async def _(user_id: str, bot: Bot) -> User | None:
-    logger.debug("Attempting to get user by id type str")
+    logger.debug("Attempting to get user by type str")
     try:
         user_id = int(user_id.replace("<@", "").replace("!", "").replace(">", ""))
         return await bot.fetch_user(user_id)
@@ -79,7 +79,7 @@ async def _(user_id: str, bot: Bot) -> User | None:
 
 @get_user_safe.register
 async def _(user_id: int, bot: Bot) -> User | None:
-    logger.debug("Attempting to get user by id type int")
+    logger.debug("Attempting to get user by type int")
     try:
         return await bot.fetch_user(user_id)
     except KeyError as exc:

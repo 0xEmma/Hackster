@@ -174,29 +174,6 @@ class Global(BaseSettings):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.roles_to_join = {
-        #     "Cyber Apocalypse": (self.roles.UNICTF2022, "Pinged for CTF Announcements"),
-        #     "Business CTF": (self.roles.UNICTF2022, "Pinged for CTF Announcements"),
-        #     "University CTF": (self.roles.UNICTF2022, "Pinged for CTF Announcements"),
-        #     "Noah Gang": (self.roles.NOAH_GANG, "Get pinged when Fugl posts pictures of his cute bird"),
-        #     "Buddy Gang": (self.roles.BUDDY_GANG, "Get pinged when Legacyy posts pictures of his cute dog"),
-        #     "Red Team": (self.roles.RED_TEAM, "Red team fans. Also gives access to the Red and Blue team channels"),
-        #     "Blue Team": (self.roles.BLUE_TEAM, "Blue team fans. Also gives access to the Red and Blue team
-        #     channels",),
-        # }
-        # self.role_groups = {
-        #     "ALL_ADMINS": [self.roles.ADMINISTRATOR, self.roles.COMMUNITY_MANAGER],
-        #     "ALL_SR_MODS": [self.roles.SR_MODERATOR],
-        #     "ALL_MODS": [self.roles.SR_MODERATOR, self.roles.MODERATOR, self.roles.JR_MODERATOR],
-        #     "ALL_HTB_STAFF": [self.roles.HTB_STAFF],
-        #     "ALL_HTB_SUPPORT": [self.roles.HTB_SUPPORT],
-        #     "ALL_RANKS": [self.roles.OMNISCIENT, self.roles.GURU, self.roles.ELITE_HACKER, self.roles.PRO_HACKER,
-        #                   self.roles.HACKER, self.roles.SCRIPT_KIDDIE, self.roles.NOOB, self.roles.VIP,
-        #                   self.roles.VIP_PLUS],
-        #     "ALL_CREATORS": [self.roles.BOX_CREATOR, self.roles.CHALLENGE_CREATOR],
-        #     "ALL_POSITIONS": [self.roles.RANK_ONE, self.roles.RANK_FIVE, self.roles.RANK_TEN,
-        #                       self.roles.RANK_TWENTY_FIVE, self.roles.RANK_FIFTY, self.roles.RANK_HUNDRED],
-        # }
 
     @validator("guild_ids", "dev_guild_ids")
     def check_ids_format(cls, v: list[int]) -> list[int]:
