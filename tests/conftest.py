@@ -5,8 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from tests import helpers
 
-# from sqlalchemy.orm import sessionmaker
-
 
 @pytest.fixture
 def hashable_mocks():

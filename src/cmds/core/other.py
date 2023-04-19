@@ -1,8 +1,8 @@
 import logging
 
 from discord import ApplicationContext, Embed, Interaction, Message, Option, WebhookMessage, slash_command
+from discord.abc import GuildChannel
 from discord.ext import commands
-from discord.types.channel import Channel
 
 from src.bot import Bot
 from src.core import settings
@@ -18,7 +18,8 @@ class OtherCog(commands.Cog):
 
     @slash_command(guild_ids=settings.guild_ids, description="A simple reply stating hints are not allowed.")
     async def no_hints(
-        self, ctx: ApplicationContext, channel: Option(Channel, "The channel to send the message to.", required=False)
+        self, ctx: ApplicationContext,
+        channel: Option(GuildChannel, "The guild channel to send the message to.", required=False) = None
     ) -> Message:
         """A simple reply stating hints are not allowed."""
         if not channel:

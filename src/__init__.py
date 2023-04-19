@@ -60,7 +60,7 @@ logging.basicConfig(
     format=fmt, datefmt=datefmt, level=logging.DEBUG, handlers=[console_handler, file_handler]
 )
 
-if settings.SENTRY_DSN:
+if settings.SENTRY_DSN and not settings.DEBUG:
     sentry_sdk.init(
         dsn=settings.SENTRY_DSN,
         environment=settings.bot.ENVIRONMENT if settings.bot.ENVIRONMENT else "local",

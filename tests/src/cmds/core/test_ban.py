@@ -196,8 +196,12 @@ class TestBanCog:
             patch(
                 'src.cmds.core.ban.get_member_safe', new_callable=AsyncMock, return_value=user
             ) as get_member_safe_mock,
-            patch('src.cmds.core.ban.add_infraction', new_callable=AsyncMock, return_value=None) as add_infraction_mock
+            patch('src.cmds.core.ban.add_infraction', new_callable=AsyncMock) as add_infraction_mock
         ):
+            add_infraction_mock.return_value = SimpleResponse(
+                message=f"{user.mention} ({user.id}) has been warned with a strike weight of 0.",
+                delete_after=None
+            )
             cog = ban.BanCog(bot)
             await cog.warn.callback(cog, ctx, user, "Any valid reason")
 
@@ -230,8 +234,12 @@ class TestBanCog:
             patch(
                 'src.cmds.core.ban.get_member_safe', new_callable=AsyncMock, return_value=user
             ) as get_member_safe_mock,
-            patch('src.cmds.core.ban.add_infraction', new_callable=AsyncMock, return_value=None) as add_infraction_mock
+            patch('src.cmds.core.ban.add_infraction', new_callable=AsyncMock) as add_infraction_mock
         ):
+            add_infraction_mock.return_value = SimpleResponse(
+                message=f"{user.mention} ({user.id}) has been warned with a strike weight of 10.",
+                delete_after=None
+            )
             cog = ban.BanCog(bot)
             await cog.strike.callback(cog, ctx, user, 10, "Any valid reason")
 
