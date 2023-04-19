@@ -17,7 +17,7 @@ request, be sure to link to that issue.
 
 *Put an `x` in the boxes that apply.*
 
-- [ ] I have read and followed the [CONTRIBUTING.md](https://github.com/dimoschi/hackster/blob/main/CONTRIBUTING.md)
+- [ ] I have read and followed the [CONTRIBUTING.md](https://github.com/hackthebox/Hackster/blob/main/CONTRIBUTING.md)
   doc.
 - [ ] Lint and unit tests pass locally with my changes.
 - [ ] I have added necessary documentation (if appropriate).
