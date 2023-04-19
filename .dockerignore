@@ -2,6 +2,9 @@
 *
 
 # Make exceptions for what's needed
+!alembic
 !src
+!resources
+!alembic.ini
 !pyproject.toml
 !poetry.lock
