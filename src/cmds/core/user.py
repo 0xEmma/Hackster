@@ -231,7 +231,7 @@ class UserCog(commands.Cog):
 
         # Create embed
         embed = discord.Embed(title="HackTheBox Discord User Stats")
-        embed.set_thumbnail(url=ctx.guild.icon.url)
+        # embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.add_field(name="Members", value=f"{members}", inline=False)
         embed.add_field(
             name="Verified Members", value=f"{verified_members} - {percent_verified}% verified", inline=False
