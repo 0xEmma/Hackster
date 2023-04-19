@@ -218,8 +218,9 @@ async def unmute_member(guild: Guild, member: Member) -> None:
             raise NoResultFound(f"Mute not found for user ID {member.id}")
 
 
-# TODO: Clean up method, return ban record and raise BanError when something goes wrong.  # noqa: T000
-async def add_infraction(guild: Guild, member: Member, weight: int, reason: str, author: Member, ) -> None:
+async def add_infraction(
+    guild: Guild, member: Member, weight: int, reason: str, author: Member
+) -> SimpleResponse:
     """Add an infraction record in DB."""
     if len(reason) == 0:
         reason = "No reason given ..."
@@ -229,7 +230,7 @@ async def add_infraction(guild: Guild, member: Member, weight: int, reason: str,
         session.add(infraction)
         await session.commit()
 
-    await author.send(f"{member.mention} ({member.id}) has been warned with a strike weight of {weight}.")
+    message = f"{member.mention} ({member.id}) has been warned with a strike weight of {weight}."
 
     try:
         await member.send(
@@ -238,10 +239,10 @@ async def add_infraction(guild: Guild, member: Member, weight: int, reason: str,
             f"Following is the reason given:\n>>> {reason}\n"
         )
     except Forbidden as ex:
-        await author.send(
-            "Could not DM member due to privacy settings, however will still attempt to ban them...", )
-        logger.warning(f"HTTPException when trying to unban user with ID {member.id}", exc_info=ex)
+        message = "Could not DM member due to privacy settings, however will still attempt to ban them..."
+        logger.warning(f"Forbidden, when trying to contact user with ID {member.id} about infraction.", exc_info=ex)
     except HTTPException as ex:
-        await author.send(
-            "Here's a 400 Bad Request for you. Just like when you tried to ask me out, last week.", )
-        logger.warning(f"HTTPException when trying to unban user with ID {member.id}", exc_info=ex)
+        message = "Here's a 400 Bad Request for you. Just like when you tried to ask me out, last week."
+        logger.warning(f"HTTPException when trying to add infraction for user with ID {member.id}", exc_info=ex)
+
+    return SimpleResponse(message=message, delete_after=None)
