@@ -3,6 +3,7 @@ from enum import Enum
 from functools import partial
 from typing import Iterable, Optional
 
+from discord import Interaction, WebhookMessage
 from discord.commands import ApplicationContext, AutocompleteContext, Option, OptionChoice, SlashCommandGroup
 from discord.errors import ExtensionAlreadyLoaded, ExtensionNotLoaded
 from discord.ext import commands
@@ -65,10 +66,10 @@ class Extensions(commands.Cog):
             str, "Choose an extension.",
             autocomplete=get_extensions
         )
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Load an extension given its name."""
         msg, error = await self.manage(Action.LOAD, extension)
-        await ctx.respond(msg)
+        return await ctx.respond(msg)
 
     @extensions.command()
     async def unload(
@@ -77,10 +78,10 @@ class Extensions(commands.Cog):
             str, "Choose an extension.",
             autocomplete=get_extensions
         )
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Unload an extension given its name."""
         msg, error = await self.manage(Action.UNLOAD, extension)
-        await ctx.respond(msg)
+        return await ctx.respond(msg)
 
     @extensions.command()
     async def reload(
@@ -89,10 +90,10 @@ class Extensions(commands.Cog):
             str, "Choose an extension.",
             autocomplete=get_extensions
         )
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Reload an extension given its name."""
         msg, error = await self.manage(Action.RELOAD, extension)
-        await ctx.respond(msg)
+        return await ctx.respond(msg)
 
     async def manage(self, action: Action, ext: str) -> tuple[str, Optional[str]]:
         """Apply an action to an extension and return the status message and any error message."""

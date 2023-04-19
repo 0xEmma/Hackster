@@ -2,7 +2,7 @@ import logging
 from typing import Tuple, Union
 
 import discord
-from discord import Member, Option, User
+from discord import Interaction, Member, Option, User, WebhookMessage
 from discord.commands import ApplicationContext, slash_command
 from discord.errors import Forbidden, HTTPException
 from discord.ext import commands
@@ -29,20 +29,18 @@ class UserCog(commands.Cog):
         description="Changes the nickname of a user to ChangeMe."
     )
     @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"))
-    async def bad_name(self, ctx: ApplicationContext, user: discord.Member) -> None:
+    async def bad_name(self, ctx: ApplicationContext, user: discord.Member) -> Interaction | WebhookMessage:
         """Changes the nickname of a user to ChangeMe."""
         member = await get_member_safe(user, ctx.guild)
         if not member:
-            await ctx.respond(f"User {user} not found in guild.")
-            return
+            return await ctx.respond(f"User {user} not found in guild.")
 
         new_name = "ChangeMe"
 
         try:
             await member.edit(nick=new_name)
         except Forbidden:
-            await ctx.respond(f"Cannot rename {member.mention} ({member.id}). Am I even allowed to?")
-            return
+            return await ctx.respond(f"Cannot rename {member.mention} ({member.id}). Am I even allowed to?")
 
         try:
             await member.send(
@@ -51,23 +49,21 @@ class UserCog(commands.Cog):
                 "HTB account (see #welcome for how) to have your name reset to your HTB username."
             )
         except Forbidden:
-            await ctx.respond(
+            return await ctx.respond(
                 f"Cannot DM user {member.mention} ({member.id}). Perhaps they do not allow DMs from strangers?"
             )
-            return
 
-        await ctx.respond(f"{member.name}'s name has been updated to {new_name}")
+        return await ctx.respond(f"{member.name}'s name has been updated to {new_name}")
 
     @slash_command(
         guild_ids=settings.guild_ids, description="Kick a user from the server."
     )
     @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"))
-    async def kick(self, ctx: ApplicationContext, user: discord.Member, reason: str) -> None:
+    async def kick(self, ctx: ApplicationContext, user: discord.Member, reason: str) -> Interaction | WebhookMessage:
         """Kick a user from the server."""
         member = await get_member_safe(user, ctx.guild)
         if not member:
-            await ctx.respond(f"User {user} not found in guild.")
-            return
+            return await ctx.respond(f"User {user} not found in guild.")
 
         if len(reason) == 0:
             reason = "No reason given..."
@@ -78,14 +74,13 @@ class UserCog(commands.Cog):
             await ctx.respond("Could not DM member due to privacy settings, however will still attempt to kick them...")
             logger.warning(f"HTTPException when trying to unban user with ID {user.id}: {ex}")
         except HTTPException as ex:
-            await ctx.respond(
+            logger.warning(f"HTTPException when trying to unban user with ID {user.id}: {ex}")
+            return await ctx.respond(
                 "Here's a 400 Bad Request for you. Just like when you tried to ask me out, last week.",
             )
-            logger.warning(f"HTTPException when trying to unban user with ID {user.id}: {ex}")
-            return
 
         await ctx.guild.kick(user=member, reason=reason)
-        await ctx.respond(f"{member.name} got the boot!")
+        return await ctx.respond(f"{member.name} got the boot!")
 
     @staticmethod
     def _match_role(role_name: str) -> Tuple[Union[dict, None], Union[str, None]]:
@@ -103,7 +98,7 @@ class UserCog(commands.Cog):
         description="Join a vanity role if such is specified, otherwise list the vanity roles available to join.",
     )
     @cooldown(1, 10, commands.BucketType.user)
-    async def join(self, ctx: ApplicationContext, role_name: str) -> None:
+    async def join(self, ctx: ApplicationContext, role_name: str) -> Interaction | WebhookMessage:
         """Join a vanity role if such is specified, otherwise list the vanity roles available to join."""
         # No role or empty role name passed
         if not role_name or role_name.isspace():
@@ -112,46 +107,42 @@ class UserCog(commands.Cog):
             embed.set_footer(text="Use the command /join <role> to join a role.")
             for role, value in settings.roles_to_join.items():
                 embed.add_field(name=role, value=value[1], inline=True)
-            await ctx.respond(embed=embed)
-            return
+            return await ctx.respond(embed=embed)
 
         matches, exc = self._match_role(role_name)
         if exc:
-            await ctx.respond(exc, ephemeral=True)
-            return
+            return await ctx.respond(exc, ephemeral=True)
 
         role_id = matches.get('role_id') or matches['role_id']
         guild_role = ctx.guild.get_role(role_id)
         await ctx.user.add_roles(guild_role)
-        await ctx.respond(f"Welcome to {guild_role.name}!", ephemeral=True)
+        return await ctx.respond(f"Welcome to {guild_role.name}!", ephemeral=True)
 
     @slash_command(
         guild_ids=settings.guild_ids, description="Removes the vanity role from your user."
     )
     @cooldown(1, 10, commands.BucketType.user)
-    async def leave(self, ctx: ApplicationContext, role_name: str) -> None:
+    async def leave(self, ctx: ApplicationContext, role_name: str) -> Interaction | WebhookMessage:
         """Removes the vanity role from your user."""
         matches, exc = self._match_role(role_name)
         if exc:
-            await ctx.respond(exc, ephemeral=True)
-            return
+            return await ctx.respond(exc, ephemeral=True)
 
         role_id = matches.get('role_id') or matches['role_id']
         guild_role = ctx.guild.get_role(role_id)
         await ctx.user.remove_roles(guild_role)
-        await ctx.respond(f"You have left {guild_role.name}.")
+        return await ctx.respond(f"You have left {guild_role.name}.")
 
     @slash_command(
         guild_ids=settings.guild_ids,
         description="Remove all records of identification the user has made from the database.",
     )
     @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"))
-    async def remove_user_token(self, ctx: ApplicationContext, user: discord.Member) -> None:
+    async def remove_user_token(self, ctx: ApplicationContext, user: discord.Member) -> Interaction | WebhookMessage:
         """Remove all records of identification the user has made from the database."""
         member = await get_user_safe(user, self.bot)
         if not member:
-            await ctx.respond(f"User {user} not found.")
-            return
+            return await ctx.respond(f"User {user} not found.")
 
         async with AsyncSessionLocal() as session:
             stmt = (
@@ -162,14 +153,13 @@ class UserCog(commands.Cog):
             htb_discord_links = result.all()
 
             if not htb_discord_links:
-                await ctx.respond(f"Could not find '{member.id}' as a Discord or HTB ID in the records.")
-                return
+                return await ctx.respond(f"Could not find '{member.id}' as a Discord or HTB ID in the records.")
 
             for link in htb_discord_links:
                 await session.delete(link)
             await session.commit()
 
-        await ctx.respond(f"All tokens related to Discord or HTB ID '{member.id}' have been deleted.")
+        return await ctx.respond(f"All tokens related to Discord or HTB ID '{member.id}' have been deleted.")
 
     @slash_command(guild_ids=settings.guild_ids, description="Show the associated HTB user.")
     @has_any_role(
@@ -179,14 +169,13 @@ class UserCog(commands.Cog):
     async def whois(
         self, ctx: ApplicationContext,
         user: Option(User | Member, description="Member to show cases of", required=True)
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Given a Discord user ID, show the associated HTB user ID and vise versa."""
         member = await get_user_safe(user, self.bot)
 
         if member is None:
             logger.debug(f"Could not find user by id: {user.id}")
-            await ctx.respond("Error: Cannot retrieve user.")
-            return
+            return await ctx.respond("Error: Cannot retrieve user.")
 
         async with AsyncSessionLocal() as session:
             stmt = (
@@ -198,8 +187,7 @@ class UserCog(commands.Cog):
             htb_discord_link: HtbDiscordLink = result.first()
 
         if not htb_discord_link:
-            await ctx.respond(f"Could not find '{member.id}' as a Discord or HTB ID in the records.")
-            return
+            return await ctx.respond(f"Could not find '{member.id}' as a Discord or HTB ID in the records.")
 
         fetched_user = await self.bot.fetch_user(htb_discord_link.discord_user_id_as_int)
         assert fetched_user.id == member.id
@@ -216,16 +204,16 @@ class UserCog(commands.Cog):
             name="HTB Profile:",
             value=f"<https://www.hackthebox.com/home/users/profile/{htb_discord_link.htb_user_id}>", inline=False, )
         embed.set_footer(text=f"More info: /history {fetched_user.id}")
-        await ctx.respond(embed=embed)
+        return await ctx.respond(embed=embed)
 
     @slash_command(guild_ids=settings.guild_ids, name="user-stats")
     @has_any_role(
         *settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"),
         *settings.role_groups.get("ALL_HTB_STAFF")
     )
-    async def user_stats(self, ctx: ApplicationContext) -> None:
+    async def user_stats(self, ctx: ApplicationContext) -> Interaction | WebhookMessage:
         """See total user count!"""
-        logger.debug(f"{ctx.author.display_name} requested user stats, sending to {ctx.channel.name}")
+        logger.debug(f"{ctx.user.display_name} requested user stats, sending to {ctx.channel.name}")
         # Get stats
         members = 0
         bots_count = 0
@@ -249,7 +237,7 @@ class UserCog(commands.Cog):
             name="Verified Members", value=f"{verified_members} - {percent_verified}% verified", inline=False
         )
         embed.add_field(name="Bots", value=f"{bots_count}", inline=False)
-        await ctx.respond(embed=embed)
+        return await ctx.respond(embed=embed)
 
 
 def setup(bot: Bot) -> None:

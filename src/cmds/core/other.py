@@ -1,9 +1,8 @@
 import logging
 
-from discord import ApplicationContext, Embed, slash_command
-from discord.abc import GuildChannel
+from discord import ApplicationContext, Embed, Interaction, Message, Option, WebhookMessage, slash_command
 from discord.ext import commands
-from discord.ext.commands import has_any_role
+from discord.types.channel import Channel
 
 from src.bot import Bot
 from src.core import settings
@@ -17,25 +16,24 @@ class OtherCog(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @slash_command(
-        guild_ids=settings.guild_ids, description="A simple reply stating hints are not allowed."
-    )
-    async def no_hints(self, ctx: ApplicationContext) -> None:
+    @slash_command(guild_ids=settings.guild_ids, description="A simple reply stating hints are not allowed.")
+    async def no_hints(
+        self, ctx: ApplicationContext, channel: Option(Channel, "The channel to send the message to.", required=False)
+    ) -> Message:
         """A simple reply stating hints are not allowed."""
-        await ctx.channel.send(
+        if not channel:
+            channel = ctx.channel
+        return await channel.send(
             "No hints are allowed for the duration the event is going on. This is a competitive event with prizes. "
             "Once the event is over you are more then welcome to share solutions/write-ups/etc and try them in the "
             "After Party event."
         )
 
-    @slash_command(
-        guild_ids=settings.guild_ids, description="Add the URL which has spoiler link."
-    )
-    async def spoiler(self, ctx: ApplicationContext, url: str) -> None:
+    @slash_command(guild_ids=settings.guild_ids, description="Add the URL which has spoiler link.")
+    async def spoiler(self, ctx: ApplicationContext, url: str) -> Interaction | WebhookMessage:
         """Add the URL which has spoiler link."""
         if len(url) == 0:
-            await ctx.send("Please provide the spoiler URL.")
-            return
+            return await ctx.respond("Please provide the spoiler URL.")
 
         if ctx.guild:
             await ctx.message.delete()
@@ -45,7 +43,7 @@ class OtherCog(commands.Cog):
 
         channel = self.bot.get_channel(settings.channels.SPOILER)
         await channel.send(embed=embed)
-        await ctx.respond("Thanks for the reporting the spoiler.", ephemeral=True, delete_after=15)
+        return await ctx.respond("Thanks for the reporting the spoiler.", ephemeral=True, delete_after=15)
 
 
 def setup(bot: Bot) -> None:

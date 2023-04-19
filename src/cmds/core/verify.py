@@ -1,7 +1,7 @@
 import logging
 
 import discord
-from discord import ApplicationContext, slash_command
+from discord import ApplicationContext, Interaction, WebhookMessage, slash_command
 from discord.errors import Forbidden, HTTPException
 from discord.ext import commands
 from discord.ext.commands import cooldown
@@ -23,7 +23,7 @@ class VerifyCog(commands.Cog):
         description="Receive instructions in a DM on how to identify yourself with your HTB account."
     )
     @cooldown(1, 60, commands.BucketType.user)
-    async def verify(self, ctx: ApplicationContext) -> None:
+    async def verify(self, ctx: ApplicationContext) -> Interaction | WebhookMessage:
         """Receive instructions in a DM on how to identify yourself with your HTB account."""
         member = ctx.user
 
@@ -63,15 +63,17 @@ class VerifyCog(commands.Cog):
             await member.send(embed=embed_step2)
             await member.send(embed=embed_step3)
         except Forbidden as ex:
-            await ctx.respond(
+            logger.error("Exception during verify call", exc_info=ex)
+            return await ctx.respond(
                 "Whoops! I cannot DM you after all due to your privacy settings. Please allow DMs from other server "
-                "members and try again.", )
-            logger.error(f"Exception during verify call: {ex}")
+                "members and try again in 1 minute."
+            )
         except HTTPException as ex:
-            await ctx.respond(
-                "An unexpected error happened (HTTP 400, bad request). Please contact an Administrator.", )
-            logger.error(f"Exception during verify call: {ex}")
-        return
+            logger.error("Exception during verify call.", exc_info=ex)
+            return await ctx.respond(
+                "An unexpected error happened (HTTP 400, bad request). Please contact an Administrator."
+            )
+        return await ctx.respond("Please check your DM for instructions.", ephemeral=True)
 
 
 def setup(bot: Bot) -> None:

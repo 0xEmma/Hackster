@@ -4,7 +4,7 @@ from typing import Callable, List, Sequence
 
 import arrow
 import discord
-from discord import ApplicationContext, Embed, NotFound, slash_command
+from discord import ApplicationContext, Embed, Interaction, NotFound, WebhookMessage, slash_command
 from discord.ext import commands
 from discord.ext.commands import has_any_role
 from sqlalchemy import select
@@ -32,7 +32,7 @@ class HistoryCog(commands.Cog):
         *settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"),
         *settings.role_groups.get("ALL_HTB_STAFF")
     )
-    async def history(self, ctx: ApplicationContext, user: discord.Member) -> None:
+    async def history(self, ctx: ApplicationContext, user: discord.Member) -> Interaction | WebhookMessage:
         """Print the infraction history and basic details about the Discord user."""
         left = False
         member = await get_member_safe(user, ctx.guild)
@@ -97,9 +97,9 @@ class HistoryCog(commands.Cog):
         )
 
         if len(embed) > 6000:
-            await ctx.send(content=f"History embed is too big to send ({len(embed)}/6000 allowed chars).")
+            return await ctx.send(content=f"History embed is too big to send ({len(embed)}/6000 allowed chars).")
         else:
-            await ctx.respond(embed=embed)
+            return await ctx.respond(embed=embed)
 
     @staticmethod
     def _embed_titles_of(

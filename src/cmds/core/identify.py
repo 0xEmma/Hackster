@@ -2,7 +2,7 @@ import logging
 from typing import Sequence
 
 import discord
-from discord import ApplicationContext, slash_command
+from discord import ApplicationContext, Interaction, WebhookMessage, slash_command
 from discord.ext import commands
 from discord.ext.commands import cooldown
 from sqlalchemy import select
@@ -29,21 +29,19 @@ class IdentifyCog(commands.Cog):
                     "ID.", guild_only=False
     )
     @cooldown(1, 60, commands.BucketType.user)
-    async def identify(self, ctx: ApplicationContext, account_identifier: str) -> None:
+    async def identify(self, ctx: ApplicationContext, account_identifier: str) -> Interaction | WebhookMessage:
         """Identify yourself on the HTB Discord server by linking your HTB account ID to your Discord user ID."""
         if len(account_identifier) != 60:
-            await ctx.respond(
+            return await ctx.respond(
                 "This Account Identifier does not appear to be the right length (must be 60 characters long).",
                 ephemeral=True
             )
-            return
 
         await ctx.respond("Identification initiated, please wait...", ephemeral=True)
         htb_user_details = await get_user_details(account_identifier)
         if htb_user_details is None:
             embed = discord.Embed(title="Error: Invalid account identifier.", color=0xFF0000)
-            await ctx.respond(embed=embed, ephemeral=True)
-            return
+            return await ctx.respond(embed=embed, ephemeral=True)
 
         json_htb_user_id = htb_user_details["user_id"]
 
@@ -51,8 +49,7 @@ class IdentifyCog(commands.Cog):
         author = ctx.user
         member = await get_member_safe(author, guild)
         if not member:
-            await ctx.respond(f"Error getting guild member with id: {author.id}.")
-            return
+            return await ctx.respond(f"Error getting guild member with id: {author.id}.")
 
         # Step 1: Check if the Account Identifier has already been recorded and if they are the previous owner.
         # Scenario:
@@ -79,9 +76,9 @@ class IdentifyCog(commands.Cog):
             embed = discord.Embed(title="Identification error", description=error_desc, color=0xFF2429)
             await self.bot.get_channel(settings.channels.BOT_LOGS).send(embed=embed)
 
-            await ctx.respond(
-                "Identification error: please contact an online Moderator or Administrator for help.", ephemeral=True, )
-            return
+            return await ctx.respond(
+                "Identification error: please contact an online Moderator or Administrator for help.", ephemeral=True
+            )
 
         # Step 2: Given the htb_user_id from JSON, check if each discord_user_id are different from member.id.
         # Scenario:
@@ -105,10 +102,9 @@ class IdentifyCog(commands.Cog):
             embed = discord.Embed(title="Identification error", description=error_desc, color=0xFF2429)
             await self.bot.get_channel(settings.channels.BOT_LOGS).send(embed=embed)
 
-            await ctx.respond(
+            return await ctx.respond(
                 "Identification error: please contact an online Moderator or Administrator for help.", ephemeral=True
             )
-            return
 
         # Step 3: Check if discord_user_id already linked to an htb_user_id, and if JSON/db HTB IDs are the same.
         # Scenario:
@@ -129,10 +125,9 @@ class IdentifyCog(commands.Cog):
             embed = discord.Embed(title="Identification error", description=error_desc, color=0xFF2429)
             await self.bot.get_channel(settings.channels.BOT_LOGS).send(embed=embed)
 
-            await ctx.respond(
+            return await ctx.respond(
                 "Identification error: please contact an online Moderator or Administrator for help.", ephemeral=True
             )
-            return
 
         htb_discord_link = HtbDiscordLink(
             account_identifier=account_identifier, discord_user_id=member.id, htb_user_id=json_htb_user_id
@@ -143,7 +138,7 @@ class IdentifyCog(commands.Cog):
 
         await process_identification(htb_user_details, user=member, bot=self.bot)
 
-        await ctx.respond(
+        return await ctx.respond(
             f"Your Discord user has been successfully identified as HTB user {json_htb_user_id}.", ephemeral=True
         )
 

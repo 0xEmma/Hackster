@@ -2,7 +2,7 @@ import logging
 
 import arrow
 from dateutil.relativedelta import relativedelta
-from discord import Embed
+from discord import Embed, Interaction, WebhookMessage
 from discord.commands import ApplicationContext, slash_command
 from discord.ext import commands
 from discord.ext.commands import cooldown
@@ -23,7 +23,7 @@ class PingCog(commands.Cog):
 
     @slash_command(guild_ids=settings.guild_ids)
     @cooldown(1, 3600, commands.BucketType.user)
-    async def ping(self, ctx: ApplicationContext) -> None:
+    async def ping(self, ctx: ApplicationContext) -> Interaction | WebhookMessage:
         """Ping the bot to see its latency and uptime."""
         difference = relativedelta(arrow.utcnow() - start_time)
         uptime: str = start_time.shift(
@@ -40,7 +40,7 @@ class PingCog(commands.Cog):
             description=f"• Gateway Latency: **{latency}ms**\n• Start time: **{uptime}**"
         )
 
-        await ctx.respond(embed=embed)
+        return await ctx.respond(embed=embed)
 
 
 def setup(bot: Bot) -> None:

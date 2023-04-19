@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 import discord
-from discord import ApplicationContext, CategoryChannel, SlashCommandGroup, TextChannel
+from discord import ApplicationContext, CategoryChannel, Interaction, SlashCommandGroup, TextChannel, WebhookMessage
 from discord.commands import Option
 from discord.ext import commands
 from discord.ext.commands import has_any_role
@@ -43,12 +43,11 @@ class CtfCog(commands.Cog):
         ctx: ApplicationContext,
         ctf_name: Option(str, "The name of the event to join"),
         ctf_pass: Option(str, "The password for the event"),
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Create CTF channels."""
         if len(ctf_pass) < 5:
             logger.info(f"Whoops, the password was too short! Password was only {len(ctf_pass)} characters...")
-            await ctx.respond("The password must be longer than 4 characters")
-            return
+            return await ctx.respond("The password must be longer than 4 characters")
 
         async def create_channel(
             _ctf_name: str, channel_name: str, category: CategoryChannel, overwrites: dict, position: int
@@ -74,8 +73,7 @@ class CtfCog(commands.Cog):
                 admin, part = await asyncio.gather(admin, part)
             except Exception as exc:
                 logger.critical("Error creating roles!", exc_info=exc)
-                await ctx.respond("Error creating roles!")
-                return
+                return await ctx.respond("Error creating roles!")
             guild = ctx.guild
             htb_staff_role = guild.get_role(settings.roles.HTB_STAFF)
 
@@ -108,7 +106,7 @@ class CtfCog(commands.Cog):
                 await ctx.respond(f"Here is the webhook generated for the CTF Announcements channel! {webhook.url}")
                 await rules.send(CTF_RULES)
             except Exception as exc:
-                logger.error("Whoops! Something bad happened during channel or role creation.", exc_info=exc)
+                logger.error("Error generating webhook.", exc_info=exc)
 
             logger.info(f"Finished creating channels and roles for CTF {ctf_name}.")
 
@@ -123,13 +121,13 @@ class CtfCog(commands.Cog):
             async with AsyncSessionLocal() as session:
                 session.add(ctf)
                 await session.commit()
-            await ctx.respond(f"CTF {ctf_name} has been created.")
+            return await ctx.respond(f"CTF {ctf_name} has been created.")
 
     @ctf.command(description="Delete CTF channels")
     @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_SR_MODS"))
     async def delete(
         self, ctx: ApplicationContext, ctf_name: Option(str, "The name of the event to join")
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Delete CTF channels."""
         try:
             async with AsyncSessionLocal() as session:
@@ -139,7 +137,8 @@ class CtfCog(commands.Cog):
                 await session.delete(ctf)
                 await session.commit()
         except Exception as exc:
-            logger.error(f"Something bad happened when trying to delete '{ctf_name}'!", exc_info=exc)
+            logger.exception(f"Something bad happened when trying to delete '{ctf_name}'!", exc_info=exc)
+            return await ctx.respond("Failed to delete CTF record from DB. Contact Bot Administrator.")
 
         try:
             logger.debug(f'Deleting channels and roles for "{ctf_name}"')
@@ -163,7 +162,8 @@ class CtfCog(commands.Cog):
             logger.debug(f"Done deleting channels and roles for '{ctf_name}'")
         except Exception as exc:
             logger.error("Failed to delete a channel or role.", exc_info=exc)
-        await ctx.respond(f"CTF {ctf_name} has been deleted.")
+            return await ctx.respond("Failed to delete channels and/or roles. Manual action required.")
+        return await ctx.respond(f"CTF {ctf_name} has been deleted.")
 
     @ctf.command(description="Join CTF channels")
     async def join(
@@ -171,7 +171,7 @@ class CtfCog(commands.Cog):
         ctx: ApplicationContext,
         ctf_name: Option(str, "The name of the event to join"),
         ctf_pass: Option(str, "The password for the event"),
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Join CTF channels."""
         # try:
         ctf_name = ctf_name.lower()
@@ -180,25 +180,22 @@ class CtfCog(commands.Cog):
             result = await session.scalars(stmt)
             ctf: Ctf = result.first()
         if not ctf:
-            await ctx.respond("The specified CTF is invalid.", ephemeral=True)
-            return
+            return await ctx.respond("The specified CTF is invalid.", ephemeral=True)
         if not isinstance(ctf_pass, str):
-            await ctx.respond(ctx, "Invalid Password!", ephemeral=True)
-            return
+            return await ctx.respond(ctx, "Invalid Password!", ephemeral=True)
 
         if ctf_pass == ctf.password:
             # Passwords matched - add roles
             guild = ctx.guild
             member = await get_member_safe(ctx.user.id, guild)
             await member.add_roles(guild.get_role(ctf.participant_role_id))
-            await ctx.respond(f"You've been added to {ctf.name}", ephemeral=True)
+            return await ctx.respond(f"You've been added to {ctf.name}", ephemeral=True)
         else:
             logger.debug(
                 f"User {ctx.user.mention} provided an invalid password for the CTF {ctf_name}. "
                 f'Supplied password (masked): {"*" * len(ctf_pass)}'
             )
-            await ctx.respond("Invalid Password!", ephemeral=True)
-            return
+            return await ctx.respond("Invalid Password!", ephemeral=True)
 
 
 def setup(bot: Bot) -> None:

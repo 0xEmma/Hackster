@@ -1,6 +1,6 @@
 import logging
 
-from discord import ApplicationContext, slash_command
+from discord import ApplicationContext, Interaction, WebhookMessage, slash_command
 from discord.abc import GuildChannel
 from discord.ext import commands
 from discord.ext.commands import has_any_role
@@ -24,7 +24,7 @@ class ChannelCog(commands.Cog):
     @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_MODS"))
     async def slowmode(
         self, ctx: ApplicationContext, channel: GuildChannel, seconds: int
-    ) -> None:
+    ) -> Interaction | WebhookMessage:
         """Add slow-mode to the channel. Specifying a value of 0 removes the slow-mode again."""
         guild = ctx.guild
 
@@ -33,21 +33,21 @@ class ChannelCog(commands.Cog):
                 channel_id = int(channel.replace("<#", "").replace(">", ""))
                 channel = guild.get_channel(channel_id)
             except ValueError:
-                await ctx.respond(
-                    f"I don't know what {channel} is. Please use #channel-reference or a channel ID.", )
-                return
+                return await ctx.respond(
+                    f"I don't know what {channel} is. Please use #channel-reference or a channel ID."
+                )
+
         try:
             seconds = int(seconds)
         except ValueError:
-            await ctx.respond(f"Malformed amount of seconds: {seconds}.")
-            return
+            return await ctx.respond(f"Malformed amount of seconds: {seconds}.")
 
         if seconds < 0:
             seconds = 0
         if seconds > 30:
             seconds = 30
         await channel.edit(slowmode_delay=seconds)
-        await ctx.respond(f"Slow-mode set in {channel.name} to {seconds} seconds.")
+        return await ctx.respond(f"Slow-mode set in {channel.name} to {seconds} seconds.")
 
 
 def setup(bot: Bot) -> None:
