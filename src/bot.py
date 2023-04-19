@@ -8,6 +8,7 @@ from discord import ApplicationContext, Cog, DiscordException, Embed, HTTPExcept
 from discord.ext.commands import Bot as DiscordBot
 from discord.ext.commands import (
     CommandNotFound,
+    CommandOnCooldown,
     DefaultHelpCommand,
     MissingAnyRole,
     MissingPermissions,
@@ -97,6 +98,8 @@ class Bot(DiscordBot, ABC):
             message = "Something about your input was wrong, please check your input and try again."
         elif isinstance(error, NoPrivateMessage):
             message = "This command cannot be run in a DM."
+        elif isinstance(error, CommandOnCooldown):
+            message = f"You are on cooldown. Try again in {error.retry_after:.2f}s"
 
         if message is None:
             raise error
