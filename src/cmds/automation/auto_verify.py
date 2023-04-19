@@ -23,7 +23,7 @@ class MessageHandler(commands.Cog):
         async with AsyncSessionLocal() as session:
             stmt = (
                 select(HtbDiscordLink)
-                .where(HtbDiscordLink.htb_user_id == member.id)
+                .where(HtbDiscordLink.discord_user_id == member.id)
                 .order_by(HtbDiscordLink.id)
                 .limit(1)
             )
