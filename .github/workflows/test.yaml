@@ -10,11 +10,6 @@ jobs:
   test:
     name: Lint & Test
     runs-on: ubuntu-latest
-    env:
-      # Specify explicit paths for python dependencies and the pre-commit
-      # environment so we know which directories to cache
-      ENV_PATH: ".test.env"
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3.5.0
