@@ -42,7 +42,6 @@ async def webhook_handler(body: WebhookBody, authorization: Union[str, None] = H
     Raises:
         HTTPException: If an error occurs while processing the webhook event or if unauthorized.
     """
-    print(authorization)
     if authorization is None or not authorization.strip().startswith("Bearer"):
         raise HTTPException(status_code=401, detail="Unauthorized")
 

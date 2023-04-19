@@ -50,7 +50,7 @@ class MessageHandler(commands.Cog):
     async def on_message(self, ctx: Message) -> None:
         """Run commands in the context of a message."""
         # Return if the message was sent by the bot to avoid recursion.
-        if ctx.user.bot:
+        if ctx.author.bot:
             return
 
         try:

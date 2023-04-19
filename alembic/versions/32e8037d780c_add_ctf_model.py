@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 from alembic import op
-from bot.database.utils.password import Password
+from src.database.utils.password import Password
 
 # revision identifiers, used by Alembic.
 revision = "32e8037d780c"

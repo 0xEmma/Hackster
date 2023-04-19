@@ -28,12 +28,6 @@ class ScheduledTasks(commands.Cog):
     async def all_tasks(self) -> None:
         """Gathers all scheduled tasks."""
         logger.debug("Gathering scheduled tasks...")
-        # scheduled_tasks = []
-        # scheduled_tasks = scheduled_tasks + self.auto_unban()
-        # scheduled_tasks = scheduled_tasks + self.auto_unmute()
-        # logger.debug("Gathering of scheduled tasks complete.")
-        #
-        # logger.debug(f"Scheduling {len(scheduled_tasks)} tasks...")
         await asyncio.gather(self.auto_unban(), self.auto_unmute())
         logger.debug("Scheduling completed.")
 

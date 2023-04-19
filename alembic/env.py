@@ -19,8 +19,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from bot.database.base_class import Base  # noqa
-from bot.models import *  # noqa
+# from src.database.base_class import Base  # noqa
+from src.database.models import *  # noqa
 
 target_metadata = Base.metadata  # noqa: F405
 
@@ -32,11 +32,11 @@ target_metadata = Base.metadata  # noqa: F405
 
 
 def get_url() -> str:
-    user = os.getenv("DB_USER", "noahbot")
-    password = os.getenv("DB_PASSWORD", None)
-    server = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "3306")
-    db = os.getenv("DB_DATABASE", "noahbot_dev")
+    user = os.getenv("MYSQL_USER", "noahbot")
+    password = os.getenv("MYSQL_PASSWORD", None)
+    server = os.getenv("MYSQL_HOST", "localhost")
+    port = os.getenv("MYSQL_PORT", "3306")
+    db = os.getenv("MYSQL_DATABASE", "noahbot_dev")
     url = f"mariadb+asyncmy://{user}:{password}@{server}:{port}/{db}?charset=utf8mb4"
     return url
 

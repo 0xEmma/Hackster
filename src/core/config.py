@@ -46,7 +46,7 @@ class Database(BaseSettings):
         """The Pydantic settings configuration."""
 
         env_file = ".env"
-        env_prefix = "DB_"
+        env_prefix = "MYSQL_"
 
 
 class Channels(BaseSettings):
@@ -270,5 +270,4 @@ def load_settings(env_file: str = ".env"):
     return global_settings
 
 
-print(os.environ.get("ENV_PATH", '.env'))
 settings = load_settings(os.environ.get("ENV_PATH", '.env'))
