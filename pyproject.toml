@@ -19,6 +19,7 @@ fastapi = "^0.95.1"
 sentry-sdk = "^1.19.1"
 uvicorn = "^0.21.1"
 alembic = "^1.10.3"
+pymysql = "^1.0.3"
 
 [tool.poetry.group.dev.dependencies]
 colorlog = "^6.5.0"
