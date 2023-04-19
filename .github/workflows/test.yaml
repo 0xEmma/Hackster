@@ -35,15 +35,23 @@ jobs:
 
       # Only when the context is exactly the same, we will restore the cache.
       - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v3.3.1
+        id: restore-poetry-dependencies
+        uses: actions/cache/restore@v3.3.1
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Create venv and install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        if: steps.restore-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --with dev
+
+      - id: cache-poetry-dependencies
+        name: Cache venv
+        if: steps.restore-poetry-dependencies.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Run tests with pytest and generate coverage report
         run: |
