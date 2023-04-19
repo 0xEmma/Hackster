@@ -8,18 +8,19 @@ RUN apt-get update && \
 
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
-COPY alembic /hackster/alembic
-COPY alembic.ini /hackster/alembic.ini
-COPY src /hackster/src
-COPY resources /hackster/resources
-COPY startup.sh /hackster/startup.sh
-COPY pyproject.toml /hackster/pyproject.toml
-RUN chmod +x /hackster/startup.sh
+WORKDIR $APP_PATH
 
-WORKDIR /hackster
-ENV PYTHONPATH=/hackster
+COPY alembic ./alembic
+COPY alembic.ini ./alembic.ini
+COPY src ./src
+COPY resources ./resources
+COPY startup.sh ./startup.sh
+COPY pyproject.toml ./pyproject.toml
+RUN chmod +x startup.sh
+
+ENV PYTHONPATH=$APP_PATH
 
 EXPOSE 1337
 # Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
 # And then will start Uvicorn
-ENTRYPOINT ["/hackster/startup.sh"]
+ENTRYPOINT ["startup.sh"]
