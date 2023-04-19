@@ -227,7 +227,7 @@ class Global(BaseSettings):
         env_file = ".env"
 
 
-def load_settings(env_file: str = ".env"):
+def load_settings(env_file: str | None = None):
     global_settings = Global(_env_file=env_file)
     global_settings.bot = Bot(_env_file=env_file)
     global_settings.database = Database(_env_file=env_file)
@@ -270,4 +270,4 @@ def load_settings(env_file: str = ".env"):
     return global_settings
 
 
-settings = load_settings(os.environ.get("ENV_PATH", '.env'))
+settings = load_settings(os.environ.get("ENV_PATH", None))

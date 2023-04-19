@@ -37,7 +37,7 @@ def get_url() -> str:
     server = os.getenv("MYSQL_HOST", "localhost")
     port = os.getenv("MYSQL_PORT", "3306")
     db = os.getenv("MYSQL_DATABASE", "noahbot_dev")
-    url = f"mariadb+asyncmy://{user}:{password}@{server}:{port}/{db}?charset=utf8mb4"
+    url = f"mariadb+pymysql://{user}:{password}@{server}:{port}/{db}?charset=utf8mb4"
     return url
 
 
