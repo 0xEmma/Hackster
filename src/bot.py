@@ -104,6 +104,10 @@ class Bot(DiscordBot, ABC):
             log.debug(f'A user caused and error which was handled. Message: "{message}".')
             await ctx.send(message, delete_after=15)
 
+    async def on_error(self, event: any, *args, **kwargs) -> None:
+        """Don't ignore the error, causing Sentry to capture it."""
+        raise
+
     def add_cog(self, cog: Cog, *, override: bool = False) -> None:
         """Log whenever a cog is loaded."""
         super().add_cog(cog, override=override)

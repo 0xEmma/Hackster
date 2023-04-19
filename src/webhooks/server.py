@@ -1,9 +1,7 @@
+import logging
 from typing import Any, Dict, Union
 
-import sentry_sdk
 from fastapi import FastAPI, Header, HTTPException
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.starlette import StarletteIntegration
 from uvicorn import Config, Server
 
 from src.bot import bot
@@ -11,13 +9,7 @@ from src.core import settings
 from src.webhooks import handlers
 from src.webhooks.types import WebhookBody
 
-sentry_sdk.init(
-    dsn=settings.SENTRY_DSN,
-    integrations=[
-        StarletteIntegration(transaction_style="url"),
-        FastApiIntegration(transaction_style="url"),
-    ],
-)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -43,13 +35,16 @@ async def webhook_handler(body: WebhookBody, authorization: Union[str, None] = H
         HTTPException: If an error occurs while processing the webhook event or if unauthorized.
     """
     if authorization is None or not authorization.strip().startswith("Bearer"):
+        logger.warning("Unauthorized webhook request")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     token = authorization[6:].strip()
     if not token == settings.WEBHOOK_TOKEN:
+        logger.warning("Unauthorized webhook request")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     if not handlers.can_handle(body.platform):
+        logger.warning("Webhook request not handled by platform")
         raise HTTPException(status_code=501, detail="Platform not implemented")
 
     return await handlers.handle(body, bot)

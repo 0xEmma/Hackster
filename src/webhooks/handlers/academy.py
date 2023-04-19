@@ -1,9 +1,13 @@
+import logging
+
 from discord import Bot
 from discord.errors import NotFound
 from fastapi import HTTPException
 
 from src.core import settings
 from src.webhooks.types import WebhookBody, WebhookEvent
+
+logger = logging.getLogger(__name__)
 
 
 async def handler(body: WebhookBody, bot: Bot) -> dict:
@@ -31,8 +35,10 @@ async def handler(body: WebhookBody, bot: Bot) -> dict:
         discord_id = int(body.data["discord_id"])
         member = await guild.fetch_member(discord_id)
     except ValueError as exc:
+        logger.debug("Invalid Discord ID", exc_info=exc)
         raise HTTPException(status_code=400, detail="Invalid Discord ID") from exc
     except NotFound as exc:
+        logger.debug("User is not in the Discord server", exc_info=exc)
         raise HTTPException(status_code=400, detail="User is not in the Discord server") from exc
 
     if body.event == WebhookEvent.ACCOUNT_LINKED:
@@ -48,6 +54,7 @@ async def handler(body: WebhookBody, bot: Bot) -> dict:
 
         role = settings.get_academy_cert_role(cert_id)
         if not role:
+            logger.debug(f"Role for certification: {cert_id} does not exist")
             raise HTTPException(status_code=400, detail=f"Role for certification: {cert_id} does not exist")
 
         await member.add_roles(role, atomic=True)
@@ -61,6 +68,7 @@ async def handler(body: WebhookBody, bot: Bot) -> dict:
 
         await member.remove_roles(*roles_to_remove, atomic=True)
     else:
+        logger.debug(f"Event {body.event} not implemented")
         raise HTTPException(status_code=501, detail=f"Event {body.event} not implemented")
 
     return {"success": True}

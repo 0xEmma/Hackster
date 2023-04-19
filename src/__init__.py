@@ -4,7 +4,12 @@ from pathlib import Path
 
 import aiohttp
 import arrow
+import sentry_sdk
 from aiohttp import TraceRequestEndParams
+from sentry_sdk.integrations.asyncio import AsyncioIntegration
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
 
 from src.core import settings
 
@@ -18,8 +23,7 @@ os.makedirs(log_dir, exist_ok=True)
 
 # File handler rotates logs every 5 MB.
 file_handler = logging.handlers.RotatingFileHandler(
-    log_file, maxBytes=5 * (2 ** 20), backupCount=10, encoding="utf-8",
-)
+    log_file, maxBytes=5 * (2 ** 20), backupCount=10, encoding="utf-8", )
 file_handler.setLevel(logging.DEBUG)
 
 # Console handler prints to terminal.
@@ -53,11 +57,20 @@ logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 # Setup new logging configuration.
 logging.basicConfig(
-    format=fmt,
-    datefmt=datefmt,
-    level=logging.DEBUG,
-    handlers=[console_handler, file_handler]
+    format=fmt, datefmt=datefmt, level=logging.DEBUG, handlers=[console_handler, file_handler]
 )
+
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.bot.ENVIRONMENT if settings.bot.ENVIRONMENT else "local",
+        integrations=[
+            SqlalchemyIntegration(),
+            AsyncioIntegration(),
+            StarletteIntegration(transaction_style="url"),
+            FastApiIntegration(transaction_style="url"),
+        ],
+    )
 
 
 async def on_request_end(session, context, params: TraceRequestEndParams) -> None:
