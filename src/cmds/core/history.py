@@ -41,10 +41,10 @@ class HistoryCog(commands.Cog):
             try:
                 member = await self.bot.fetch_user(user.id)
             except NotFound:
-                await ctx.respond(
+                return await ctx.respond(
                     "Error: cannot get history - user was deleted from Discord entirely.", delete_after=15
                 )
-                return
+
             left = True
 
         today_date = arrow.utcnow().date()
@@ -97,7 +97,7 @@ class HistoryCog(commands.Cog):
         )
 
         if len(embed) > 6000:
-            return await ctx.send(content=f"History embed is too big to send ({len(embed)}/6000 allowed chars).")
+            return await ctx.respond(f"History embed is too big to send ({len(embed)}/6000 allowed chars).")
         else:
             return await ctx.respond(embed=embed)
 

@@ -1,7 +1,10 @@
+import json
 import logging
+import os
+import random
 
 from discord import ApplicationContext, Interaction, Option, WebhookMessage
-from discord.ext.commands import BucketType, Cog, cooldown, slash_command
+from discord.ext.commands import BucketType, Cog, cooldown, has_any_role, slash_command
 
 from src.bot import Bot
 from src.core import settings
@@ -16,8 +19,17 @@ class Fun(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
+    @staticmethod
+    def _get_car() -> str:
+        with open(os.path.join(settings.ROOT, "resources", "cars.json"), "r") as f:
+            cars = json.loads(f.read())
+            random_car = random.choice(cars)
+
+        return f"{random_car['brand']} - {random.choice(random_car['models'])}"
+
     @slash_command(guild_ids=settings.guild_ids, name="ban-song")
     @cooldown(1, 60, BucketType.user)
+    @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_SR_MODS"))
     async def ban_song(self, ctx: ApplicationContext) -> Interaction | WebhookMessage:
         """Ban ban ban ban ban ..."""
         return await ctx.respond("https://www.youtube.com/watch?v=FXPKJUE86d0")
@@ -53,7 +65,7 @@ class Fun(Cog):
     @slash_command(guild_ids=settings.guild_ids)
     async def vpn(self, ctx: ApplicationContext) -> Interaction | WebhookMessage:
         """Get the flag!"""
-        await ctx.respond(
+        return await ctx.respond(
             "There is no need to use a VPN to connect for any of the CA Challenges, they are all accessible via the "
             "public IP's given when started. Not all challenges have an HTTP server however, some you need to connect "
             "via nc."
@@ -63,9 +75,9 @@ class Fun(Cog):
     @cooldown(1, 60, BucketType.user)
     async def beep(self, ctx: ApplicationContext) -> Interaction | WebhookMessage:
         """Beep Beep!"""
-        car = "Beetle"
+        car = self._get_car()
         member = await get_member_safe(ctx.user, ctx.guild)
-        await member.edit(name=car)
+        await member.edit(nick=car)
         return await ctx.respond(f"BEEP BEEP! {car}")
 
     @slash_command(guild_ids=settings.guild_ids, name="start-here", default_permission=True)

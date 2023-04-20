@@ -1,6 +1,6 @@
 import logging
 
-from discord import ApplicationContext, Interaction, WebhookMessage, slash_command
+from discord import ApplicationContext, Interaction, Option, WebhookMessage, slash_command
 from discord.abc import GuildChannel
 from discord.ext import commands
 from discord.ext.commands import has_any_role
@@ -48,6 +48,17 @@ class ChannelCog(commands.Cog):
             seconds = 30
         await channel.edit(slowmode_delay=seconds)
         return await ctx.respond(f"Slow-mode set in {channel.name} to {seconds} seconds.")
+
+    @slash_command(guild_ids=settings.guild_ids)
+    @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_SR_MODS"))
+    async def cleanup(
+        self, ctx: ApplicationContext,
+        count: Option(int, "How many messages to delete", required=True, default=5),
+    ) -> Interaction | WebhookMessage:
+        """Removes the past X messages!"""
+        await ctx.channel.purge(limit=count + 1, bulk=True, check=lambda m: m != ctx.message)
+        # Don't delete the command that triggered this deletion
+        return await ctx.respond(f"Deleted {count} messages.", ephemeral=True)
 
 
 def setup(bot: Bot) -> None:

@@ -16,9 +16,13 @@ from src.core import settings
 # Set timestamp of when execution started.
 start_time = arrow.utcnow()
 
+# Get up project root.
+root = Path(__file__).parent.parent
+settings.ROOT = root
+
 # Set up file logging.
-log_dir = Path("logs")
-log_file = log_dir / f"{settings.bot.NAME.lower()}_{arrow.utcnow().strftime('%d-%m-%Y')}.log"
+log_dir = os.path.join(root, "logs")
+log_file = os.path.join(log_dir, f"{settings.bot.NAME.lower()}_{arrow.utcnow().strftime('%d-%m-%Y')}.log")
 os.makedirs(log_dir, exist_ok=True)
 
 # File handler rotates logs every 5 MB.

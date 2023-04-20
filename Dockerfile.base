@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.11.2
 ARG POETRY_VERSION=1.4.2
 
 # `python-base` sets up all our shared environment variables
-FROM python:${PYTHON_VERSION} as python-base
+FROM python:${PYTHON_VERSION}-slim as python-base
 
 # python
 ENV \

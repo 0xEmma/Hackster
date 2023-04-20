@@ -1,4 +1,6 @@
 import logging
+import os
+import random
 from typing import Tuple, Union
 
 import discord
@@ -24,6 +26,11 @@ class UserCog(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
+    @staticmethod
+    def _get_baby_names() -> list[str]:
+        with open(os.path.join(settings.ROOT, "resources", "unisex_baby_names.txt"), "r") as f:
+            return f.read().splitlines()
+
     @slash_command(
         guild_ids=settings.guild_ids,
         description="Changes the nickname of a user to ChangeMe."
@@ -35,7 +42,7 @@ class UserCog(commands.Cog):
         if not member:
             return await ctx.respond(f"User {user} not found in guild.")
 
-        new_name = "ChangeMe"
+        new_name = random.choice(self._get_baby_names()) + " McVerify"
 
         try:
             await member.edit(nick=new_name)
@@ -98,7 +105,10 @@ class UserCog(commands.Cog):
         description="Join a vanity role if such is specified, otherwise list the vanity roles available to join.",
     )
     @cooldown(1, 10, commands.BucketType.user)
-    async def join(self, ctx: ApplicationContext, role_name: str) -> Interaction | WebhookMessage:
+    async def join(
+        self, ctx: ApplicationContext,
+        role_name: Option(str, "Choose the role!", choices=settings.roles_to_join.keys()),
+    ) -> Interaction | WebhookMessage:
         """Join a vanity role if such is specified, otherwise list the vanity roles available to join."""
         # No role or empty role name passed
         if not role_name or role_name.isspace():
@@ -122,7 +132,10 @@ class UserCog(commands.Cog):
         guild_ids=settings.guild_ids, description="Removes the vanity role from your user."
     )
     @cooldown(1, 10, commands.BucketType.user)
-    async def leave(self, ctx: ApplicationContext, role_name: str) -> Interaction | WebhookMessage:
+    async def leave(
+        self, ctx: ApplicationContext,
+        role_name: Option(str, "Choose the role!", choices=settings.roles_to_join.keys())
+    ) -> Interaction | WebhookMessage:
         """Removes the vanity role from your user."""
         matches, exc = self._match_role(role_name)
         if exc:

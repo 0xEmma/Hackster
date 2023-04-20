@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseSettings, validator
@@ -171,6 +172,8 @@ class Global(BaseSettings):
 
     START_WEBHOOK_SERVER: bool = False
     WEBHOOK_TOKEN: str = ""
+
+    ROOT: Path = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
