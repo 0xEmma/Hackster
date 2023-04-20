@@ -1,4 +1,4 @@
-# [Hackster](./README.md) &middot; [![GitHub license]](./LICENSE) ![Test Action]
+# [Hackster](./README.md) &middot; [![GitHub license]](./LICENSE) ![CI](https://github.com/hackthebox/hackster/actions/workflows/test.yaml/badge.svg)
 
 <!-- Table of Contents -->
 
