@@ -186,6 +186,7 @@ class UserCog(commands.Cog):
         await ctx.user.add_roles(guild_role)
         await ctx.respond("You have now been designated an APT")
 
+
     @slash_command(
         guild_ids=settings.guild_ids,
         description="Remove all records of identification the user has made from the database.",
