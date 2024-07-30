@@ -100,7 +100,16 @@ class OtherCog(commands.Cog):
         modal = FeedbackModal(title="Feedback")
         return await ctx.send_modal(modal)
 
-
+    @slash_command(guild_ids=settings.guild_ids, description="Send Feedback to The Community Voting")
+    @has_any_role(*settings.role_groups.get("ALL_ADMINS"), *settings.role_groups.get("ALL_HTB_STAFF"))
+    async def SendFeedback(self, ctx: ApplicationContext, title: str, body: str) -> Interaction:
+        """Send Feedback to Public Voting"""
+        channel = await ctx.guild.get_channel(settings.channels.PUBLIC_FEEDBACK)
+        msg = await  channel.send_message(f"{title} \n, {body}")
+        await msg.add_reaction("upvote")
+        await msg.add_reaction("downvote")
+        await msg.create_thread(name=title, auto_archive_duration=60)
+        await ctx.respond(f"Feedback {title} Created")
 def setup(bot: Bot) -> None:
     """Load the `ChannelManageCog` cog."""
     bot.add_cog(OtherCog(bot))
