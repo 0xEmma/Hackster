@@ -52,7 +52,7 @@ class FeedbackModal(Modal):
                 custom_id="details",
                 placeholder="What happened? Steps to reproduce, expected vs actual behavior…",
                 style=discord.InputTextStyle.long,
-                max_length=4000,
+                max_length=2900,
                 required=True,
             )
         )
